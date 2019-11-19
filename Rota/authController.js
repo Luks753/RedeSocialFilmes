@@ -1,6 +1,7 @@
 const express = require('express')
 const User = require('../db_apis/usuario')
 const Movie = require('../db_apis/movies')
+const cassandra = require('../config/cassandra')
 const router = express.Router();
 
 router.post('/register', async (req, res)=>{
@@ -30,8 +31,12 @@ router.get('/', async (req, res)=>{
     }
 });
 router.get('/:user?', async (req, res)=>{
+    await cassandra.execute('select * from feed where usuario = ?', [req.params.user], (err, result)=>{
+        console.log(result)
+    });
     try{
         const users = await User.findOne({"login":`${req.params.user}`});
+        //const feed = 
         return res.send({users});
     }catch(err){
         res.status(400).send({error: 'Get falhou'})
@@ -41,7 +46,7 @@ router.get('/:user?', async (req, res)=>{
 router.post('/fav/:user?&:movie?', async (req, res)=>{
     try{
         const users = await User.updateOne({"login":`${req.params.user}`},{$push:{"favorites":`${req.params.movie}`}});
-        return res.send({users, movies});
+        return res.send({users});
     }catch(err){
         res.status(400).send({error: 'Update falhou'})
     }
@@ -59,6 +64,7 @@ router.post('/add/:user?&:friend?', async (req, res)=>{
 router.post('/avaliation/:user?&:movie?&:nota?', async (req, res)=>{
     try{
         const users = await User.updateOne({"login":`${req.params.user}`},{$push:{"avaliations":{"movie":`${req.params.movie}`, "nota":`${req.params.nota}`}}});
+        
         return res.send({users});
     }catch(err){
         res.status(400).send({error: 'Update falhou'})
