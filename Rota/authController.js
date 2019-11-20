@@ -6,6 +6,7 @@ const router = express.Router();
 
 router.get('/', async (req, res)=>{
     try{
+        //db.users.find();
         const users = await User.find();
         return res.send({users});
     }catch(err){
@@ -15,6 +16,7 @@ router.get('/', async (req, res)=>{
 
 router.get('/:user?', async (req, res)=>{    
     try{
+        //db.users.findOne({"login":"usuario"});
         const users = await User.findOne({"login":`${req.params.user}`});
         return res.send({users});
     }catch(err){
@@ -24,8 +26,9 @@ router.get('/:user?', async (req, res)=>{
 
 router.post('/register', async (req, res)=>{
     try{
+        //db.users.create({"login":"usuário".....})
         const user = await User.create(req.body);
-        await cassandra.execute("insert into atividade(id, user, action, movie, date) values (now(),?,'registrar',?,toTimeStamp(now()))", [req.body.login,req.body.login]);
+        await cassandra.execute("insert into atividade(id, user, action, target, date) values (now(),?,'registrar',?,toTimeStamp(now()))", [req.body.login,req.body.login]);
         return res.send({user});
     }catch(err){
         res.status(400).send({error: 'Cadastro falhou'})
@@ -34,6 +37,7 @@ router.post('/register', async (req, res)=>{
 
 router.post('/delete', async (req, res)=>{
     try{
+        //db.users.deleteMany();
         const user = await User.deleteMany();
         return res.send({user});
     }catch(err){
@@ -43,6 +47,7 @@ router.post('/delete', async (req, res)=>{
 
 router.post('/fav/:user?&:movie?', async (req, res)=>{
     try{
+        //db.users.updateOne({"login":"usuário}, {$push:{"favorites":"filme"}});
         const users = await User.updateOne({"login":`${req.params.user}`},{$push:{"favorites":`${req.params.movie}`}});
         await cassandra.execute("insert into atividade(id, user, action, target, date) values (now(),?,'favoritar',?,toTimeStamp(now()))", [req.params.user,req.params.movie]);
         return res.send({users});
@@ -53,6 +58,7 @@ router.post('/fav/:user?&:movie?', async (req, res)=>{
 
 router.post('/add/:user?&:friend?', async (req, res)=>{
     try{
+        //db.users.updateOne({"login":"usuário}, {$push:{"friends":"usuario"}});
         const users = await User.updateOne({"login":`${req.params.user}`},{$push:{"friends":`${req.params.friend}`}});
         await cassandra.execute("insert into atividade(id, user, action, target, date) values (now(),?,'adicionar',?,toTimeStamp(now()))", [req.params.user,req.params.friend]);
         return res.send({users});
@@ -63,6 +69,7 @@ router.post('/add/:user?&:friend?', async (req, res)=>{
 
 router.post('/avaliation/:user?&:movie?&:nota?', async (req, res)=>{
     try{
+        //db.users.updateOne({"login":"usuário}, {$push:{"avaliations":{"movie":"filme","nota":"nota"}}});
         const users = await User.updateOne({"login":`${req.params.user}`},{$push:{"avaliations":{"movie":`${req.params.movie}`, "nota":`${req.params.nota}`}}});
         await cassandra.execute("insert into atividade(id, user, action, target, date) values (now(),?,'avaliar',?,toTimeStamp(now()))", [req.params.user,req.params.movie]);
         return res.send({users});
