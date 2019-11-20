@@ -27,6 +27,7 @@ app.use('/', indexRoute);
 
 require('./Rota/authController')(app);
 require('./Rota/movies')(app);
+require('./Rota/feed')(app);
 
 app.listen(3000);
 
